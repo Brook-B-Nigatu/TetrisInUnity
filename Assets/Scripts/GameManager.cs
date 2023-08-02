@@ -69,6 +69,7 @@ public class GameManager : MonoBehaviour
         occupied = new GameObject[ROWCOUNT, COLUMNCOUNT + 1];
         BlockLanded += BlockLandHandler;
 
+        PauseManager.TogglePause += OnTogglePause;
         
     }
 
@@ -118,8 +119,7 @@ public class GameManager : MonoBehaviour
 
     }
 
-    void PauseGame(){
-        Time.timeScale = 1 - Time.timeScale;
+    void OnTogglePause(){
         gamePaused ^= true;
     }
 }
