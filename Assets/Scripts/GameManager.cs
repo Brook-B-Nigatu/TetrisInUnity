@@ -47,6 +47,8 @@ public class GameManager : MonoBehaviour
 
     private GameObject[] blocks;
 
+    private bool gamePaused = false;
+
     IEnumerator activeCoroutine;    // The active coroutine that moves blocks downsssss
 
     // Start is called before the first frame update
@@ -66,6 +68,8 @@ public class GameManager : MonoBehaviour
         
         occupied = new GameObject[ROWCOUNT, COLUMNCOUNT + 1];
         BlockLanded += BlockLandHandler;
+
+        
     }
 
     void Start()
@@ -87,6 +91,8 @@ public class GameManager : MonoBehaviour
             activeCoroutine = moveActive();
             StartCoroutine(activeCoroutine);
         }
+
+        
          
     }
 
@@ -110,5 +116,10 @@ public class GameManager : MonoBehaviour
         StopCoroutine(activeCoroutine);
         spawnNew = true;
 
+    }
+
+    void PauseGame(){
+        Time.timeScale = 1 - Time.timeScale;
+        gamePaused ^= true;
     }
 }
