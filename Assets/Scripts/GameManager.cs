@@ -35,15 +35,18 @@ public class GameManager : MonoBehaviour
     private Vector2 bottomLeft, topRight;   // Coordinates of corners of screen in World coordinates
     private float blockWidth;       // and height
     
-    private Vector3 spawnPos;
-    
-    private Vector2 spawnCoords;
+    private Vector3 spawnPos, HorizontalShift, VerticalShift;
+
+    private Vector2 spawnCoords, HorizontalCoordShift = new Vector2(1, 0), VerticalCoordShift = new Vector2(0, 1);
 
     private bool spawnNew = true;
 
     // Event system to be triggered each time blocks land
     private delegate void OnBlockLand();
     private event OnBlockLand BlockLanded;
+
+    private delegate void OnBlockMove();
+    private event OnBlockMove BlockMove;    
 
     private GameObject[] blocks;
 
@@ -63,9 +66,13 @@ public class GameManager : MonoBehaviour
         spawnPos = new Vector3(-blockWidth/ 2 * (1 - ROWCOUNT % 2), bottomLeft.y + (blockWidth * (COLUMNCOUNT + 0.5f + 1)), 0);
         spawnCoords = new Vector2(ROWCOUNT / 2 - 1 + (ROWCOUNT % 2), COLUMNCOUNT + 1);
 
-        
-        occupied = new GameObject[ROWCOUNT, COLUMNCOUNT + 1];
+        HorizontalShift = new Vector3(blockWidth, 0, 0);
+        VerticalShift = new Vector3(0, blockWidth, 0);
+
+        occupied = new GameObject[ROWCOUNT, COLUMNCOUNT + 2];
         BlockLanded += BlockLandHandler;
+
+        BlockMove += checkLand;
     }
 
     void Start()
@@ -87,21 +94,30 @@ public class GameManager : MonoBehaviour
             activeCoroutine = moveActive();
             StartCoroutine(activeCoroutine);
         }
-         
+
+        if (Input.GetKeyDown(KeyCode.LeftArrow) && canMoveLeft())
+        {
+            activeBlockCoords -= HorizontalCoordShift;
+            activeBlock.transform.position -= HorizontalShift;
+            BlockMove();
+        }
+        if (Input.GetKeyDown(KeyCode.RightArrow) && canMoveRight())
+        {
+            activeBlockCoords += HorizontalCoordShift;
+            activeBlock.transform.position += HorizontalShift;
+            BlockMove();
+        }
+
     }
 
     IEnumerator moveActive(){
         while(true){
             yield return new WaitForSeconds(waitTime);
-            
-            activeBlock.transform.position -= new Vector3(0, blockWidth, 0);
-            activeBlockCoords -= new Vector2(0, 1);
 
-            // Blocks land when it one reaches the bottom or is right above a landed block
-            if (activeBlockCoords.y == 0 || occupied[(int)activeBlockCoords.x, (int)activeBlockCoords.y - 1]){
-                occupied[(int)activeBlockCoords.x, (int)activeBlockCoords.y] = activeBlock;
-                BlockLanded();
-            }
+            activeBlock.transform.position -= VerticalShift;
+            activeBlockCoords -= VerticalCoordShift;
+
+            BlockMove();
             
         }
     }
@@ -109,6 +125,26 @@ public class GameManager : MonoBehaviour
     void BlockLandHandler(){
         StopCoroutine(activeCoroutine);
         spawnNew = true;
-        Debug.Log("UP");
+    }
+
+    void checkLand()
+    {
+        // Blocks land when it one reaches the bottom or is right above a landed block
+        if (activeBlockCoords.y == 0 || occupied[(int)activeBlockCoords.x, (int)activeBlockCoords.y - 1])
+        {
+            occupied[(int)activeBlockCoords.x, (int)activeBlockCoords.y] = activeBlock;
+            BlockLanded();
+        }
+    }
+    bool canMoveRight()
+    {
+        return activeBlockCoords.x < ROWCOUNT - 1
+            && !occupied[(int)activeBlockCoords.x + 1, (int)activeBlockCoords.y];
+    }
+
+    bool canMoveLeft()
+    {
+        return activeBlockCoords.x > 0
+            && !occupied[(int)activeBlockCoords.x - 1, (int)activeBlockCoords.y];
     }
 }
