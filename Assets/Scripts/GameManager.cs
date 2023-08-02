@@ -110,5 +110,6 @@ public class GameManager : MonoBehaviour
         StopCoroutine(activeCoroutine);
         spawnNew = true;
         Debug.Log("Down");
+        Debug.Log("expt");
     }
 }
