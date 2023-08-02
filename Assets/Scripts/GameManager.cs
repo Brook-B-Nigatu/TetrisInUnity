@@ -109,6 +109,6 @@ public class GameManager : MonoBehaviour
     void BlockLandHandler(){
         StopCoroutine(activeCoroutine);
         spawnNew = true;
-        Debug.Log("ohhhh!");
+        Debug.Log("UP");
     }
 }
