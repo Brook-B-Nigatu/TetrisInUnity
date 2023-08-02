@@ -102,10 +102,12 @@ public class GameManager : MonoBehaviour
                 occupied[(int)activeBlockCoords.x, (int)activeBlockCoords.y] = activeBlock;
                 BlockLanded();
             }
+            
         }
     }
 
     void BlockLandHandler(){
         StopCoroutine(activeCoroutine);
+        spawnNew = true;
     }
 }

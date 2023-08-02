@@ -261,3 +261,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blockPrefab: {fileID: 3283825587222127695, guid: f5457469e0b2ac7459393e02f52db554, type: 3}
   ROWCOUNT: 20
+  waitTime: 0.3
