@@ -71,6 +71,7 @@ public class GameManager : MonoBehaviour
 
         occupied = new GameObject[ROWCOUNT, COLUMNCOUNT + 2];
         BlockLanded += BlockLandHandler;
+        Debug.Log("LOOL");
 
         BlockMove += checkLand;
     }
