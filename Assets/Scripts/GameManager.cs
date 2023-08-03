@@ -12,6 +12,13 @@ public class GameManager : MonoBehaviour
         S
     };
 
+    private enum Directions
+    {
+        Left,
+        Right,
+        Down
+    };
+
     [SerializeField]
     private GameObject blockPrefab;         // Block to copy each time blocks are spawned
 
@@ -105,15 +112,11 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.LeftArrow) && canMoveLeft())
         {
-            activeBlockCoords -= HorizontalCoordShift;
-            activeBlock.transform.position -= HorizontalShift;
-            BlockMove();
+            moveBlock(Directions.Left);
         }
         if (Input.GetKeyDown(KeyCode.RightArrow) && canMoveRight())
         {
-            activeBlockCoords += HorizontalCoordShift;
-            activeBlock.transform.position += HorizontalShift;
-            BlockMove();
+            moveBlock(Directions.Right);
         }
     }
 
@@ -123,12 +126,37 @@ public class GameManager : MonoBehaviour
         {
             yield return new WaitForSeconds(waitTime);
 
-            activeBlock.transform.position -= VerticalShift;
-            activeBlockCoords -= VerticalCoordShift;
-
-            BlockMove();
+            moveBlock(Directions.Down);
 
         }
+    }
+
+    void moveBlock(Directions direction)
+    {
+        switch (direction)
+        {
+            case Directions.Left:
+                
+                activeBlockCoords -= HorizontalCoordShift;
+                activeBlock.transform.position -= HorizontalShift;
+                
+                break;
+           
+            case Directions.Right:
+
+                activeBlockCoords += HorizontalCoordShift;
+                activeBlock.transform.position += HorizontalShift;
+                
+                break;
+            case Directions.Down:
+
+                activeBlock.transform.position -= VerticalShift;
+                activeBlockCoords -= VerticalCoordShift;
+
+                break;
+        }
+
+        BlockMove();
     }
 
     void BlockLandHandler(){
