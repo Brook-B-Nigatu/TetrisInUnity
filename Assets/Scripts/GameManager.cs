@@ -79,11 +79,29 @@ public class GameManager : MonoBehaviour
         VerticalShift = new Vector3(0, blockWidth, 0);
 
         occupied = new GameObject[ROWCOUNT, COLUMNCOUNT + 2];
+        
+    }
+
+    void OnEnable()
+    {
+        // Subscribe to events
+
         BlockLanded += BlockLandHandler;
 
         BlockMove += checkLand;
 
         PauseManager.TogglePause += OnTogglePause;
+    }
+
+    void OnDisable()
+    {
+        // Unsubscribe to events
+
+        BlockLanded -= BlockLandHandler;
+
+        BlockMove -= checkLand;
+
+        PauseManager.TogglePause -= OnTogglePause;
     }
 
     void Start()
