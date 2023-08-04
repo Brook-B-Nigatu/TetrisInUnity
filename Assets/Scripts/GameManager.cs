@@ -51,7 +51,7 @@ public class GameManager : MonoBehaviour
     private delegate void OnBlockLand();
     private event OnBlockLand BlockLanded;
 
-    private delegate void OnBlockMove(ref Block block);
+    private delegate void OnBlockMove();
     private event OnBlockMove BlockMove;    
 
     private Block[] blocks;
@@ -127,13 +127,13 @@ public class GameManager : MonoBehaviour
             StartCoroutine(activeCoroutine);
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftArrow) && canMoveLeft(ref activeBlock))
+        if (Input.GetKeyDown(KeyCode.LeftArrow) && canMoveLeft())
         {
-            moveBlock(ref activeBlock, Directions.Left);
+            moveBlock(Directions.Left);
         }
-        if (Input.GetKeyDown(KeyCode.RightArrow) && canMoveRight(ref activeBlock))
+        if (Input.GetKeyDown(KeyCode.RightArrow) && canMoveRight())
         {
-            moveBlock(ref activeBlock, Directions.Right);
+            moveBlock(Directions.Right);
         }
     }
 
@@ -143,12 +143,12 @@ public class GameManager : MonoBehaviour
         {
             yield return new WaitForSeconds(waitTime);
 
-            moveBlock(ref activeBlock, Directions.Down);
+            moveBlock(Directions.Down);
 
         }
     }
 
-    void moveBlock(ref Block block, Directions direction)
+    void moveBlock(Directions direction)
     {
         switch (direction)
         {
@@ -157,7 +157,7 @@ public class GameManager : MonoBehaviour
                 //activeBlock.coords -= HorizontalCoordShift;
                 //activeBlock.transform.position -= HorizontalShift;
 
-                block.move(-1 * HorizontalShift, -1 * HorizontalCoordShift);
+                activeBlock.move(-1 * HorizontalShift, -1 * HorizontalCoordShift);
                 
                 break;
            
@@ -166,7 +166,7 @@ public class GameManager : MonoBehaviour
                 //activeBlock.coords += HorizontalCoordShift;
                 //activeBlock.transform.position += HorizontalShift;
                 
-                block.move(HorizontalShift, HorizontalCoordShift);
+                activeBlock.move(HorizontalShift, HorizontalCoordShift);
 
                 break;
             case Directions.Down:
@@ -174,38 +174,42 @@ public class GameManager : MonoBehaviour
                 //activeBlock.transform.position -= VerticalShift;
                 //activeBlock.coords -= VerticalCoordShift;
 
-                block.move(-1 * VerticalShift, -1 * VerticalCoordShift);
+                activeBlock.move(-1 * VerticalShift, -1 * VerticalCoordShift);
 
                 break;
         }
 
-        BlockMove(ref block);
+        BlockMove();
     }
 
     void BlockLandHandler(){
+        
         StopCoroutine(activeCoroutine);
+        occupied[(int)activeBlock.coords.x, (int)activeBlock.coords.y] = activeBlock;
         spawnNew = true;
+
     }
 
-    void checkLand(ref Block block)
+    void checkLand()
     {
         // Blocks land when it one reaches the bottom or is right above a landed block
-        if (block.coords.y == 0 || occupied[(int)block.coords.x, (int)block.coords.y - 1])
+        if (activeBlock.coords.y == 0 || occupied[(int)activeBlock.coords.x, (int)activeBlock.coords.y - 1])
         {
-            occupied[(int)block.coords.x, (int)block.coords.y] = block;
+            
             BlockLanded();
         }
     }
-    bool canMoveRight(ref Block block)
+
+    bool canMoveRight()
     {
-        return block.coords.x < ROWCOUNT - 1
-            && !occupied[(int)block.coords.x + 1, (int)block.coords.y];
+        return activeBlock.coords.x < ROWCOUNT - 1
+            && !occupied[(int)activeBlock.coords.x + 1, (int)activeBlock.coords.y];
     }
 
-    bool canMoveLeft(ref Block block)
+    bool canMoveLeft()
     {
-        return block.coords.x > 0
-            && !occupied[(int)block.coords.x - 1, (int)block.coords.y];
+        return activeBlock.coords.x > 0
+            && !occupied[(int)activeBlock.coords.x - 1, (int)activeBlock.coords.y];
     }
 
     void OnTogglePause()
