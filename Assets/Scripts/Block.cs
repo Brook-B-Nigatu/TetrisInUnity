@@ -4,27 +4,12 @@ using UnityEngine;
 
 public class Block : MonoBehaviour
 {
-    private SpriteRenderer spriteRenderer;
-    // Start is called before the first frame update
+    public Vector2 coords;
 
-    void Awake()
+    public void move(Vector3 posShift, Vector2 coordShift)
     {
-        /*spriteRenderer = GetComponent<SpriteRenderer>();
-        Debug.Log(spriteRenderer.bounds.size.x);
-        transform.localScale = new Vector3(2f, 2f, 2f);
-        Debug.Log(spriteRenderer.bounds.size.x);
-        Debug.Log(Screen.width);*/
+        transform.position += posShift;
+        coords += coordShift;
     }
 
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-    
-        
-    }
 }
