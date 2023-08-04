@@ -118,9 +118,7 @@ public class GameManager : MonoBehaviour
        
         if(spawnNew){
             
-            activeBlock = Instantiate(blockPrefab).GetComponent<Block>();
-            activeBlock.transform.position = spawnPos;
-            activeBlock.coords = spawnCoords;
+            spawnBlock();
             
             spawnNew = false;
             activeCoroutine = moveActive();
@@ -135,6 +133,13 @@ public class GameManager : MonoBehaviour
         {
             moveBlock(Directions.Right);
         }
+    }
+
+    void spawnBlock()
+    {
+        activeBlock = Instantiate(blockPrefab).GetComponent<Block>();
+        activeBlock.transform.position = spawnPos;
+        activeBlock.coords = spawnCoords;
     }
 
     IEnumerator moveActive()
