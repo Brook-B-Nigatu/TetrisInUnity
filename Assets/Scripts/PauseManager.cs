@@ -10,11 +10,6 @@ public class PauseManager : MonoBehaviour
 
     private GameObject pauseMenu;
 
-    // Start is called before the first frame update
-
-    void Awake(){
-      
-    }
 
     void OnEnable()
     {
