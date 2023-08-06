@@ -33,6 +33,8 @@ public class GameManager : MonoBehaviour
     private Block[,] occupied;         // Stores landed blocks and used to determine when blocks should land
                                             // Coordinate (0, 0) corresponds to a block at the bottom left corner
                                             // of the playable area
+    private int highestUnoccupied; // Highest unoccupied row (just to optimize a bit)
+    private int[] blocksInRow;       // Stores block-counts for each row
 
     private Block activeBlock;         
     
@@ -53,8 +55,6 @@ public class GameManager : MonoBehaviour
 
     private delegate void OnBlockMove();
     private event OnBlockMove BlockMove;    
-
-    private Block[] blocks;
 
     private bool gamePaused = false;
    
@@ -78,14 +78,17 @@ public class GameManager : MonoBehaviour
         VerticalShift = new Vector3(0, blockWidth, 0);
 
         occupied = new Block[ROWCOUNT, COLUMNCOUNT + 2];
-        
+        highestUnoccupied = 0;
+        blocksInRow = new int[COLUMNCOUNT + 2];
     }
 
     void OnEnable()
     {
         // Subscribe to events
 
-        BlockLanded += BlockLandHandler;
+        BlockLanded += blockLandHandler1;
+
+        BlockLanded += blockLandHandler2;
 
         BlockMove += checkLand;
 
@@ -96,7 +99,9 @@ public class GameManager : MonoBehaviour
     {
         // Unsubscribe to events
 
-        BlockLanded -= BlockLandHandler;
+        BlockLanded -= blockLandHandler1;
+
+        BlockLanded -= blockLandHandler2;
 
         BlockMove -= checkLand;
 
@@ -105,6 +110,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+       
         
     }
 
@@ -187,12 +193,51 @@ public class GameManager : MonoBehaviour
         BlockMove();
     }
 
-    void BlockLandHandler(){
+    void blockLandHandler1(){
         
+        // Land The blocks
+
         StopCoroutine(activeCoroutine);
         occupied[(int)activeBlock.coords.x, (int)activeBlock.coords.y] = activeBlock;
-        spawnNew = true;
+        
+        if(activeBlock.coords.y >= highestUnoccupied)
+            highestUnoccupied = (int)activeBlock.coords.y + 1;
 
+        blocksInRow[(int)activeBlock.coords.y] += 1;
+        
+
+    }
+
+    void blockLandHandler2()
+    {
+        // Check if rows have been filled, destroy filled rows, and move upper rows down
+
+        if (blocksInRow[(int)activeBlock.coords.y] == ROWCOUNT)
+        { 
+            for(int i = 0; i < ROWCOUNT; i++)
+            {
+                Destroy(occupied[i, (int)activeBlock.coords.y].gameObject);
+            }
+            for(int j = (int)activeBlock.coords.y; j < highestUnoccupied; j++)
+            {
+                for(int i = 0; i < ROWCOUNT; i++)
+                {
+                    occupied[i, j] = occupied[i, j + 1];
+                    if (occupied[i, j] != null)
+                    {
+                        occupied[i, j].move(-1 * VerticalShift, -1 * VerticalCoordShift);
+                    }
+                }
+                blocksInRow[j] = blocksInRow[j + 1];
+            }
+            highestUnoccupied--;
+        }
+        spawnNew = true;
+    }
+
+    void destroyRow(int row)
+    {
+        
     }
 
     void checkLand()
