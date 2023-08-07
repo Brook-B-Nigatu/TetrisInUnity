@@ -36,11 +36,12 @@ public class GameManager : MonoBehaviour
     private int highestUnoccupied; // Highest unoccupied row (just to optimize a bit)
     private int[] blocksInRow;       // Stores block-counts for each row
 
-    private Block activeBlock;         
+    private Block[] activeBlocks;         
     
     
 
     private Vector2 bottomLeft, topRight;   // Coordinates of corners of screen in World coordinates
+    
     private float blockWidth;       // and height
     
     private Vector3 spawnPos, HorizontalShift, VerticalShift;
@@ -63,9 +64,11 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {   
-        // Determine key constants for the rest of the game
+        // Determine key constants for the rest of the game and Initialize data structures to keep track of game status
         
         blockWidth = blockPrefab.GetComponent<SpriteRenderer>().bounds.size.x;
+
+        activeBlocks = new Block[4];
 
         Camera cam = Camera.main;
         bottomLeft = cam.ViewportToWorldPoint(new Vector3(0, 0, 0));
@@ -108,12 +111,6 @@ public class GameManager : MonoBehaviour
         PauseManager.TogglePause -= OnTogglePause;
     }
 
-    void Start()
-    {
-       
-        
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -124,7 +121,7 @@ public class GameManager : MonoBehaviour
        
         if(spawnNew){
             
-            spawnBlock();
+            spawnBlocks();
             
             spawnNew = false;
             activeCoroutine = moveActive();
@@ -133,59 +130,68 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.LeftArrow) && canMoveLeft())
         {
-            moveBlock(Directions.Left);
+            moveBlocks(Directions.Left);
         }
         if (Input.GetKeyDown(KeyCode.RightArrow) && canMoveRight())
         {
-            moveBlock(Directions.Right);
+            moveBlocks(Directions.Right);
         }
     }
 
-    void spawnBlock()
+    void spawnBlocks()
     {
-        activeBlock = Instantiate(blockPrefab).GetComponent<Block>();
-        activeBlock.transform.position = spawnPos;
-        activeBlock.coords = spawnCoords;
+        for (int i = 0; i < 4; i++)
+        {
+            activeBlocks[i] = Instantiate(blockPrefab).GetComponent<Block>();
+        }
+        activeBlocks[0].transform.position = spawnPos - HorizontalShift;
+        activeBlocks[0].coords = spawnCoords - HorizontalCoordShift;
+        
+        activeBlocks[1].transform.position = spawnPos;
+        activeBlocks[1].coords = spawnCoords;
+
+        activeBlocks[2].transform.position = spawnPos + HorizontalShift;
+        activeBlocks[2].coords = spawnCoords + HorizontalCoordShift;
+
+        activeBlocks[3].transform.position = spawnPos + (HorizontalShift * 2);
+        activeBlocks[3].coords = spawnCoords + (HorizontalCoordShift * 2);
     }
 
     IEnumerator moveActive()
     {
+        // This moves blocks down continuously until they land
         while (true)
         {
             yield return new WaitForSeconds(waitTime);
 
-            moveBlock(Directions.Down);
+            moveBlocks(Directions.Down);
 
         }
     }
 
-    void moveBlock(Directions direction)
+    void moveBlocks(Directions direction)
     {
+        // move blocks in specified direction and check for landing
         switch (direction)
         {
             case Directions.Left:
                 
-                //activeBlock.coords -= HorizontalCoordShift;
-                //activeBlock.transform.position -= HorizontalShift;
-
-                activeBlock.move(-1 * HorizontalShift, -1 * HorizontalCoordShift);
+                foreach(Block activeBlock in activeBlocks)
+                    activeBlock.move(-1 * HorizontalShift, -1 * HorizontalCoordShift);
                 
                 break;
            
             case Directions.Right:
 
-                //activeBlock.coords += HorizontalCoordShift;
-                //activeBlock.transform.position += HorizontalShift;
-                
-                activeBlock.move(HorizontalShift, HorizontalCoordShift);
+                foreach(Block activeBlock in activeBlocks)
+                    activeBlock.move(HorizontalShift, HorizontalCoordShift);
 
                 break;
+
             case Directions.Down:
 
-                //activeBlock.transform.position -= VerticalShift;
-                //activeBlock.coords -= VerticalCoordShift;
-
-                activeBlock.move(-1 * VerticalShift, -1 * VerticalCoordShift);
+                foreach(Block activeBlock in activeBlocks)
+                    activeBlock.move(-1 * VerticalShift, -1 * VerticalCoordShift);
 
                 break;
         }
@@ -198,68 +204,107 @@ public class GameManager : MonoBehaviour
         // Land The blocks
 
         StopCoroutine(activeCoroutine);
-        occupied[(int)activeBlock.coords.x, (int)activeBlock.coords.y] = activeBlock;
         
-        if(activeBlock.coords.y >= highestUnoccupied)
-            highestUnoccupied = (int)activeBlock.coords.y + 1;
-
-        blocksInRow[(int)activeBlock.coords.y] += 1;
-        
-
+        foreach(Block activeBlock in activeBlocks)
+        {
+            occupied[(int)activeBlock.coords.x, (int)activeBlock.coords.y] = activeBlock;
+            
+            if(activeBlock.coords.y >= highestUnoccupied)
+                highestUnoccupied = (int)activeBlock.coords.y + 1;
+            
+            blocksInRow[(int)activeBlock.coords.y] += 1;
+        }
+          
     }
 
     void blockLandHandler2()
     {
-        // Check if rows have been filled, destroy filled rows, and move upper rows down
+        // Check if rows have been filled, destroy filled rows, and move upper rows down by appropiate amounts
 
-        if (blocksInRow[(int)activeBlock.coords.y] == ROWCOUNT)
-        { 
-            for(int i = 0; i < ROWCOUNT; i++)
-            {
-                Destroy(occupied[i, (int)activeBlock.coords.y].gameObject);
-            }
-            for(int j = (int)activeBlock.coords.y; j < highestUnoccupied; j++)
-            {
-                for(int i = 0; i < ROWCOUNT; i++)
-                {
-                    occupied[i, j] = occupied[i, j + 1];
-                    if (occupied[i, j] != null)
-                    {
-                        occupied[i, j].move(-1 * VerticalShift, -1 * VerticalCoordShift);
-                    }
-                }
-                blocksInRow[j] = blocksInRow[j + 1];
-            }
-            highestUnoccupied--;
-        }
-        spawnNew = true;
-    }
-
-    void destroyRow(int row)
-    {
+        int lowestDestroyed = highestUnoccupied;    // this gives us the lowest unoccupied row after destroying full rows
         
-    }
+        foreach(Block activeBlock in activeBlocks)
+        {
+            if (activeBlock != null && blocksInRow[(int)activeBlock.coords.y] == ROWCOUNT)
+            { 
+                for(int i = 0; i < ROWCOUNT; i++)   // destroy row
+                {
+                    Destroy(occupied[i, (int)activeBlock.coords.y].gameObject);
+                }
+                blocksInRow[(int)activeBlock.coords.y] = 0;     
+                
+                if(activeBlock.coords.y < lowestDestroyed) 
+                    lowestDestroyed = (int)activeBlock.coords.y;
+            }
+        }
 
+        int shift = 0;  // keeps track of hom much to shift occupied rows 
+
+        for(int j = lowestDestroyed; j < highestUnoccupied; j++)
+        {
+            if (blocksInRow[j] == 0)
+            {
+                shift++;    // each time a destroyed row is encountered, shift is incremented
+                continue;
+            }
+
+            for(int i = 0; i < ROWCOUNT; i++)   // shift down occupied rows
+            {
+                occupied[i, j - shift] = occupied[i, j];
+                if (occupied[i, j] != null)
+                {
+                    occupied[i, j].move(-shift * VerticalShift, -shift * VerticalCoordShift);
+                }
+            }
+            blocksInRow[j - shift] = blocksInRow[j];
+            blocksInRow[j] = 0;
+        }
+        highestUnoccupied -= shift;
+
+        spawnNew = true;
+    
+
+    }
     void checkLand()
     {
-        // Blocks land when it one reaches the bottom or is right above a landed block
-        if (activeBlock.coords.y == 0 || occupied[(int)activeBlock.coords.x, (int)activeBlock.coords.y - 1])
+        // Blocks land when one reaches the bottom or is right above a landed block
+        
+        foreach(Block activeBlock in activeBlocks)
         {
-            
-            BlockLanded();
+            if (activeBlock.coords.y == 0 || occupied[(int)activeBlock.coords.x, (int)activeBlock.coords.y - 1])
+            {
+                BlockLanded();
+                return;
+            }
+
         }
+        
     }
 
     bool canMoveRight()
     {
-        return activeBlock.coords.x < ROWCOUNT - 1
-            && !occupied[(int)activeBlock.coords.x + 1, (int)activeBlock.coords.y];
+        // Just check if any block is on the right extreme
+        foreach(Block activeBlock in activeBlocks)
+        {
+            if(activeBlock.coords.x == ROWCOUNT - 1 || occupied[(int)activeBlock.coords.x + 1, (int)activeBlock.coords.y])
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     bool canMoveLeft()
     {
-        return activeBlock.coords.x > 0
-            && !occupied[(int)activeBlock.coords.x - 1, (int)activeBlock.coords.y];
+        // Just check if any block is on the left extreme
+        foreach(Block activeBlock in activeBlocks)
+        {
+            if(activeBlock.coords.x == 0 || occupied[(int)activeBlock.coords.x - 1, (int)activeBlock.coords.y])
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     void OnTogglePause()
