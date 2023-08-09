@@ -2,16 +2,42 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
-{
-    // Shapes of spawned blocks as in tetris
-    private enum Shapes{
+// Shapes of spawned blocks as in tetris
+public enum Shapes{
         Long,
         Block,
         T,
         S
-    };
+};
 
+// Shapes will be generated for the Game Manager to spawn the blocks
+interface ShapeGenerator
+{
+    Shapes nextShape();
+}
+
+// This picks the next shape randomly
+class RandomGenerator : ShapeGenerator
+{
+    Shapes[] shapes;
+    public RandomGenerator()
+    {
+        shapes = (Shapes[])System.Enum.GetValues(typeof(Shapes));
+    }
+    public Shapes nextShape()
+    { 
+        int randIndex = shapes.Length;
+        while(randIndex == shapes.Length)   // Random.value may return 1
+        {
+            randIndex = (int)(Random.value * shapes.Length);
+        }
+        return shapes[randIndex];
+    }
+}
+
+public class GameManager : MonoBehaviour
+{
+    
     private enum Directions
     {
         Left,
@@ -58,6 +84,8 @@ public class GameManager : MonoBehaviour
     private event OnBlockMove BlockMove;    
 
     private bool gamePaused = false;
+
+    private ShapeGenerator generator;
    
     IEnumerator activeCoroutine;    // The active coroutine that moves blocks downsssss
 
@@ -80,9 +108,11 @@ public class GameManager : MonoBehaviour
         HorizontalShift = new Vector3(blockWidth, 0, 0);
         VerticalShift = new Vector3(0, blockWidth, 0);
 
-        occupied = new Block[ROWCOUNT, COLUMNCOUNT + 2];
+        occupied = new Block[ROWCOUNT, COLUMNCOUNT + 3];
         highestUnoccupied = 0;
-        blocksInRow = new int[COLUMNCOUNT + 2];
+        blocksInRow = new int[COLUMNCOUNT + 3];
+
+        generator = new RandomGenerator();
     }
 
     void OnEnable()
@@ -121,7 +151,7 @@ public class GameManager : MonoBehaviour
        
         if(spawnNew){
             
-            spawnBlocks();
+            spawnBlocks(generator.nextShape());
             
             spawnNew = false;
             activeCoroutine = moveActive();
@@ -138,23 +168,85 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void spawnBlocks()
+    void spawnBlocks(Shapes shape)
     {
+        Vector3[] positions = new Vector3[4];
+        
+        Vector2[] coords = new Vector2[4];
+
+        switch (shape)
+        {
+            case Shapes.Long:
+
+                positions[0] = spawnPos - HorizontalShift;
+                coords[0] = spawnCoords - HorizontalCoordShift;
+        
+                positions[1] = spawnPos;
+                coords[1] = spawnCoords;
+
+                positions[2] = spawnPos + HorizontalShift;
+                coords[2] = spawnCoords + HorizontalCoordShift;
+
+                positions[3] = spawnPos + (HorizontalShift * 2);
+                coords[3] = spawnCoords + (HorizontalCoordShift * 2);
+                break;
+            
+             case Shapes.Block:
+
+                positions[0] = spawnPos;
+                coords[0] = spawnCoords;
+        
+                positions[1] = spawnPos + HorizontalShift;
+                coords[1] = spawnCoords + HorizontalCoordShift;
+
+                positions[2] = spawnPos + HorizontalShift + VerticalShift;
+                coords[2] = spawnCoords + HorizontalCoordShift + VerticalCoordShift;
+
+                positions[3] = spawnPos + VerticalShift;
+                coords[3] = spawnCoords + VerticalCoordShift;
+                break;
+             
+             case Shapes.S:
+
+                positions[0] = spawnPos - HorizontalShift;
+                coords[0] = spawnCoords - HorizontalCoordShift;
+        
+                positions[1] = spawnPos;
+                coords[1] = spawnCoords;
+
+                positions[2] = spawnPos + VerticalShift;
+                coords[2] = spawnCoords + VerticalCoordShift;
+
+                positions[3] = spawnPos + VerticalShift + HorizontalShift;
+                coords[3] = spawnCoords + VerticalCoordShift + HorizontalCoordShift;
+                break;
+             
+             case Shapes.T:
+
+                positions[0] = spawnPos - HorizontalShift;
+                coords[0] = spawnCoords - HorizontalCoordShift;
+        
+                positions[1] = spawnPos;
+                coords[1] = spawnCoords;
+
+                positions[2] = spawnPos + VerticalShift;
+                coords[2] = spawnCoords + VerticalCoordShift;
+
+                positions[3] = spawnPos + HorizontalShift;
+                coords[3] = spawnCoords + HorizontalCoordShift;
+                break;
+
+        }
+
         for (int i = 0; i < 4; i++)
         {
             activeBlocks[i] = Instantiate(blockPrefab).GetComponent<Block>();
+            activeBlocks[i].transform.position = positions[i];
+            activeBlocks[i].coords = coords[i];
         }
-        activeBlocks[0].transform.position = spawnPos - HorizontalShift;
-        activeBlocks[0].coords = spawnCoords - HorizontalCoordShift;
+
         
-        activeBlocks[1].transform.position = spawnPos;
-        activeBlocks[1].coords = spawnCoords;
-
-        activeBlocks[2].transform.position = spawnPos + HorizontalShift;
-        activeBlocks[2].coords = spawnCoords + HorizontalCoordShift;
-
-        activeBlocks[3].transform.position = spawnPos + (HorizontalShift * 2);
-        activeBlocks[3].coords = spawnCoords + (HorizontalCoordShift * 2);
+        
     }
 
     IEnumerator moveActive()
