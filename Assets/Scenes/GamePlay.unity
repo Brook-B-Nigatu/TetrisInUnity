@@ -1284,7 +1284,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockPrefab: {fileID: 3283825587222127695, guid: f5457469e0b2ac7459393e02f52db554, type: 3}
-  ROWCOUNT: 20
+  ROWCOUNT: 12
   waitTime: 0.1
 --- !u!1 &1877255157
 GameObject:

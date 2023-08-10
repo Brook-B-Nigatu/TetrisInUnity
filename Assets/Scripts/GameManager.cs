@@ -88,6 +88,7 @@ public class GameManager : MonoBehaviour
     private ShapeGenerator generator;
    
     IEnumerator activeCoroutine;    // The active coroutine that moves blocks downsssss
+    Shapes currentShape;
 
     // Start is called before the first frame update
     void Awake()
@@ -148,10 +149,11 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
-       
+        
         if(spawnNew){
-            
-            spawnBlocks(generator.nextShape());
+            currentShape = generator.nextShape();
+            spawnBlocks(currentShape);
+           
             
             spawnNew = false;
             activeCoroutine = moveActive();
@@ -165,6 +167,14 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.RightArrow) && canMoveRight())
         {
             moveBlocks(Directions.Right);
+        }
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            rotateBlocks(currentShape, false);
+        }
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            rotateBlocks(currentShape, true);
         }
     }
 
@@ -261,6 +271,60 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    bool checkOccupied(Vector2 coords)
+    {
+        return occupied[(int)coords.x, (int)coords.y] != null;
+    }
+
+    void rotateBlocks(Shapes shape, bool anticlockwise)
+    {
+        Vector2[] coords = new Vector2[activeBlocks.Length];
+        int pivotIndex = 1;
+
+        for(int i = 0; i < activeBlocks.Length; i++)
+        {
+            coords[i] = activeBlocks[i].coords;
+        }
+
+        Vector2[] shifts = rotation_aux(coords, pivotIndex, anticlockwise);
+
+        for(int i = 0; i < activeBlocks.Length; i++)    // Check if rotation is possible
+        {
+        
+            if (checkOccupied(coords[pivotIndex] + shifts[i]))
+            {
+                return; 
+            }
+        }
+
+        for(int i = 0; i < activeBlocks.Length; i++)
+        {
+            activeBlocks[i].coords = coords[pivotIndex] + shifts[i];
+            activeBlocks[i].transform.position = activeBlocks[pivotIndex].transform.position + (Vector3)(shifts[i] * blockWidth);
+        }
+        checkLand();
+
+    }
+
+    // The following returns shifts relative to the pivot of the coordinates resulting from rotation
+
+    Vector2[] rotation_aux(Vector2[] coords, int pivotIndex, bool anticlockwise)
+    {
+        Vector2[] shifts = new Vector2[coords.Length];
+        Vector2 diff;
+
+        int multiplier = anticlockwise?1 : -1;
+
+        for (int i = 0; i < coords.Length; i++)
+        {
+            diff = coords[i] - coords[pivotIndex];
+            shifts[i] = multiplier * new Vector2(-diff.y, diff.x);
+        }
+
+
+        return shifts;
+    }
+
     void moveBlocks(Directions direction)
     {
         // move blocks in specified direction and check for landing
@@ -322,6 +386,7 @@ public class GameManager : MonoBehaviour
                 for(int i = 0; i < ROWCOUNT; i++)   // destroy row
                 {
                     Destroy(occupied[i, (int)activeBlock.coords.y].gameObject);
+                    occupied[i, (int)activeBlock.coords.y] = null;
                 }
                 blocksInRow[(int)activeBlock.coords.y] = 0;     
                 
@@ -346,6 +411,7 @@ public class GameManager : MonoBehaviour
                 if (occupied[i, j] != null)
                 {
                     occupied[i, j].move(-shift * VerticalShift, -shift * VerticalCoordShift);
+                    occupied[i, j] = null;
                 }
             }
             blocksInRow[j - shift] = blocksInRow[j];
@@ -363,7 +429,7 @@ public class GameManager : MonoBehaviour
         
         foreach(Block activeBlock in activeBlocks)
         {
-            if (activeBlock.coords.y == 0 || occupied[(int)activeBlock.coords.x, (int)activeBlock.coords.y - 1])
+            if (activeBlock.coords.y == 0 || checkOccupied(new Vector2(activeBlock.coords.x, activeBlock.coords.y - 1)))
             {
                 BlockLanded();
                 return;
@@ -378,7 +444,7 @@ public class GameManager : MonoBehaviour
         // Just check if any block is on the right extreme
         foreach(Block activeBlock in activeBlocks)
         {
-            if(activeBlock.coords.x == ROWCOUNT - 1 || occupied[(int)activeBlock.coords.x + 1, (int)activeBlock.coords.y])
+            if(activeBlock.coords.x == ROWCOUNT - 1 || checkOccupied(new Vector2(activeBlock.coords.x + 1, activeBlock.coords.y)))
             {
                 return false;
             }
@@ -391,12 +457,12 @@ public class GameManager : MonoBehaviour
         // Just check if any block is on the left extreme
         foreach(Block activeBlock in activeBlocks)
         {
-            if(activeBlock.coords.x == 0 || occupied[(int)activeBlock.coords.x - 1, (int)activeBlock.coords.y])
+            if(activeBlock.coords.x == 0 || checkOccupied(new Vector2(activeBlock.coords.x - 1, activeBlock.coords.y)))
             {
                 return false;
             }
         }
-        return true;
+        return true; 
     }
 
     void OnTogglePause()
