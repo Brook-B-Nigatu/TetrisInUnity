@@ -1283,7 +1283,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 731387bf93e50ce47917e79589f6bb3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blockPrefab: {fileID: 3283825587222127695, guid: f5457469e0b2ac7459393e02f52db554, type: 3}
+  blockPrefabs:
+  - {fileID: 3283825587222127695, guid: 6da40c9dec2aa0340a87cdb22da31a39, type: 3}
+  - {fileID: 3283825587222127695, guid: ac86e0d2278339145b43918185684d8e, type: 3}
+  - {fileID: 3283825587222127695, guid: 515ae902bdaf1534d974d89210e0f4ca, type: 3}
+  - {fileID: 3283825587222127695, guid: ce623b23ab20738458ebb53a2c7531c7, type: 3}
   ROWCOUNT: 12
   waitTime: 0.1
 --- !u!1 &1877255157

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7570057691367484405}
   - component: {fileID: 9160045117391529659}
   m_Layer: 0
-  m_Name: Block
+  m_Name: GreenBlock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32,7 +32,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &8559223988863430818
 SpriteRenderer:
@@ -75,7 +75,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: cf38f45a61e1bf34481d44131e0d69ac, type: 3}
+  m_Sprite: {fileID: 21300000, guid: b98ae1d729d707c4dadee154992b33f0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -98,6 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83491d684e2fedd42918de2e3cada2de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  coords: {x: 0, y: 0}
 --- !u!61 &9160045117391529659
 BoxCollider2D:
   m_ObjectHideFlags: 0

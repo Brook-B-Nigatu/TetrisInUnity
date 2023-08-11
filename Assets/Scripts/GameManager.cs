@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
     };
 
     [SerializeField]
-    private GameObject blockPrefab;         // Block to copy each time blocks are spawned
+    private GameObject[] blockPrefabs;         // Block to copy each time blocks are spawned
 
     [SerializeField]
     private int ROWCOUNT = 10;              // Number of blocks that can fit horizontally 
@@ -95,7 +95,7 @@ public class GameManager : MonoBehaviour
     {   
         // Determine key constants for the rest of the game and Initialize data structures to keep track of game status
         
-        blockWidth = blockPrefab.GetComponent<SpriteRenderer>().bounds.size.x;
+        blockWidth = blockPrefabs[0].GetComponent<SpriteRenderer>().bounds.size.x;
 
         activeBlocks = new Block[4];
 
@@ -250,7 +250,7 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < 4; i++)
         {
-            activeBlocks[i] = Instantiate(blockPrefab).GetComponent<Block>();
+            activeBlocks[i] = Instantiate(blockPrefabs[(int) currentShape]).GetComponent<Block>();
             activeBlocks[i].transform.position = positions[i];
             activeBlocks[i].coords = coords[i];
         }
