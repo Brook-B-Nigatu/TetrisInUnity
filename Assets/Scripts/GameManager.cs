@@ -90,6 +90,8 @@ public class GameManager : MonoBehaviour
     IEnumerator activeCoroutine;    // The active coroutine that moves blocks downsssss
     Shapes currentShape;
 
+    private LineRenderer lineRenderer;
+
     // Start is called before the first frame update
     void Awake()
     {   
@@ -114,6 +116,31 @@ public class GameManager : MonoBehaviour
         blocksInRow = new int[COLUMNCOUNT + 3];
 
         generator = new RandomGenerator();
+
+        lineRenderer = GetComponent<LineRenderer>();
+        drawLines();
+    }
+
+    void drawLines()
+    {
+        Vector3[] positions = new Vector3[4];
+        float spawnX = spawnPos.x;
+        float spawnCoordX = spawnCoords.x;
+
+        float leftBound = spawnX - blockWidth * (0.5f + spawnCoordX);
+        float rightBound = leftBound + ROWCOUNT * blockWidth;
+
+        positions[0] = new Vector3(leftBound, bottomLeft.y - 1, 0);
+        positions[1] = new Vector3(rightBound, bottomLeft.y - 1, 0);
+        positions[2] = new Vector3(rightBound, topRight.y + 1, 0);
+        positions[3] = new Vector3(leftBound, topRight.y + 1, 0);
+
+        lineRenderer.positionCount = 4;
+        lineRenderer.SetPositions(positions);
+
+        lineRenderer.widthMultiplier = 0.05f;
+        lineRenderer.loop = true;
+        
     }
 
     void OnEnable()
@@ -278,6 +305,10 @@ public class GameManager : MonoBehaviour
 
     void rotateBlocks(Shapes shape, bool anticlockwise)
     {
+        if(shape == Shapes.Block)
+        {
+            return;
+        }
         Vector2[] coords = new Vector2[activeBlocks.Length];
         int pivotIndex = 1;
 
