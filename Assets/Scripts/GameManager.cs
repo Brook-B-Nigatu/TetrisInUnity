@@ -7,7 +7,10 @@ public enum Shapes{
         Long,
         Block,
         T,
-        S
+        S,
+        Z,
+        L,
+        Seven
 };
 
 // Shapes will be generated for the Game Manager to spawn the blocks
@@ -268,6 +271,51 @@ public class GameManager : MonoBehaviour
 
                 positions[2] = spawnPos + VerticalShift;
                 coords[2] = spawnCoords + VerticalCoordShift;
+
+                positions[3] = spawnPos + HorizontalShift;
+                coords[3] = spawnCoords + HorizontalCoordShift;
+                break;
+
+             case Shapes.Z:
+
+                positions[0] = spawnPos - HorizontalShift + VerticalShift;
+                coords[0] = spawnCoords - HorizontalCoordShift + VerticalCoordShift;
+        
+                positions[1] = spawnPos;
+                coords[1] = spawnCoords;
+
+                positions[2] = spawnPos + VerticalShift;
+                coords[2] = spawnCoords + VerticalCoordShift;
+
+                positions[3] = spawnPos + HorizontalShift;
+                coords[3] = spawnCoords + HorizontalCoordShift;
+                break;
+
+            case Shapes.L:
+                
+                positions[0] = spawnPos - HorizontalShift;
+                coords[0] = spawnCoords - HorizontalCoordShift;
+        
+                positions[1] = spawnPos;
+                coords[1] = spawnCoords;
+
+                positions[2] = spawnPos + VerticalShift - HorizontalShift;
+                coords[2] = spawnCoords + VerticalCoordShift - HorizontalCoordShift;
+
+                positions[3] = spawnPos + HorizontalShift;
+                coords[3] = spawnCoords + HorizontalCoordShift;
+                break;
+
+            case Shapes.Seven:
+
+                positions[0] = spawnPos - HorizontalShift;
+                coords[0] = spawnCoords - HorizontalCoordShift;
+        
+                positions[1] = spawnPos;
+                coords[1] = spawnCoords;
+
+                positions[2] = spawnPos + VerticalShift + HorizontalShift;
+                coords[2] = spawnCoords + VerticalCoordShift + HorizontalCoordShift;
 
                 positions[3] = spawnPos + HorizontalShift;
                 coords[3] = spawnCoords + HorizontalCoordShift;
