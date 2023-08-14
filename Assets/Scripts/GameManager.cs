@@ -89,6 +89,8 @@ public class GameManager : MonoBehaviour
     private bool gamePaused = false;
 
     private ShapeGenerator generator;
+
+    public static AudioSource audioSource;
    
     IEnumerator activeCoroutine;    // The active coroutine that moves blocks downsssss
     Shapes currentShape;
@@ -119,7 +121,8 @@ public class GameManager : MonoBehaviour
         blocksInRow = new int[COLUMNCOUNT + 3];
 
         generator = new RandomGenerator();
-
+        audioSource = GetComponent<AudioSource>();
+        
         lineRenderer = GetComponent<LineRenderer>();
         drawLines();
     }
@@ -175,6 +178,7 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        bool play = false;
         if (gamePaused)
         {
             return;
@@ -183,7 +187,7 @@ public class GameManager : MonoBehaviour
         if(spawnNew){
             currentShape = generator.nextShape();
             spawnBlocks(currentShape);
-           
+            
             
             spawnNew = false;
             activeCoroutine = moveActive();
@@ -193,19 +197,32 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftArrow) && canMoveLeft())
         {
             moveBlocks(Directions.Left);
+            play = true;
         }
         if (Input.GetKeyDown(KeyCode.RightArrow) && canMoveRight())
         {
             moveBlocks(Directions.Right);
+            play = true;
         }
         if (Input.GetKeyDown(KeyCode.A))
         {
             rotateBlocks(currentShape, false);
+            
         }
         if (Input.GetKeyDown(KeyCode.D))
         {
             rotateBlocks(currentShape, true);
+           
         }
+        if (play)
+        {
+            playSound();
+        }
+    }
+
+    public static void playSound()
+    {
+        audioSource.Play();
     }
 
     void spawnBlocks(Shapes shape)
@@ -348,7 +365,8 @@ public class GameManager : MonoBehaviour
 
     bool checkOccupied(Vector2 coords)
     {
-        return occupied[(int)coords.x, (int)coords.y] != null;
+        return coords.x < 0 || coords.x >= occupied.GetLength(0)
+               || coords.y < 0 || coords.y >= occupied.GetLength(1) || occupied[(int)coords.x, (int)coords.y] != null;
     }
 
     void rotateBlocks(Shapes shape, bool anticlockwise)
@@ -375,6 +393,8 @@ public class GameManager : MonoBehaviour
                 return; 
             }
         }
+
+        playSound();
 
         for(int i = 0; i < activeBlocks.Length; i++)
         {
