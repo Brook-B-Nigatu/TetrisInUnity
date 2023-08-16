@@ -1594,7 +1594,7 @@ MonoBehaviour:
   - {fileID: 5123842773043759707, guid: 3d937bb677951614682bb2d9e5a8f128, type: 3}
   - {fileID: 8253531750853275753, guid: a15de675a2c975f4fbe1f8716628be51, type: 3}
   ROWCOUNT: 12
-  waitTime: 0.1
+  waitTime: 0.08
 --- !u!120 &1733613237
 LineRenderer:
   serializedVersion: 2

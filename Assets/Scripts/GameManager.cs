@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // Shapes of spawned blocks as in tetris
 public enum Shapes{
@@ -83,6 +84,9 @@ public class GameManager : MonoBehaviour
     private delegate void OnBlockLand();
     private event OnBlockLand BlockLanded;
 
+    public delegate void OnGameOver();
+    public static event OnGameOver GameOver;
+
     private delegate void OnBlockMove();
     private event OnBlockMove BlockMove;    
 
@@ -152,24 +156,20 @@ public class GameManager : MonoBehaviour
     void OnEnable()
     {
         // Subscribe to events
-
         BlockLanded += blockLandHandler1;
-
         BlockLanded += blockLandHandler2;
-
+        BlockLanded += gameOverCheck;
         BlockMove += checkLand;
-
+        GameOver += gameOverHandler;
         PauseManager.TogglePause += OnTogglePause;
     }
 
     void OnDisable()
     {
         // Unsubscribe to events
-
-        BlockLanded -= blockLandHandler1;
-
+        BlockLanded -= gameOverCheck;
         BlockLanded -= blockLandHandler2;
-
+        BlockLanded -= blockLandHandler1;
         BlockMove -= checkLand;
 
         PauseManager.TogglePause -= OnTogglePause;
@@ -522,6 +522,13 @@ public class GameManager : MonoBehaviour
     
 
     }
+    void gameOverCheck()
+    {
+        if (blocksInRow[COLUMNCOUNT] > 0)
+        {
+            GameOver();
+        }
+    }
     void checkLand()
     {
         // Blocks land when one reaches the bottom or is right above a landed block
@@ -569,4 +576,9 @@ public class GameManager : MonoBehaviour
         gamePaused ^= true;
     }
 
+    void gameOverHandler()
+    {
+        Debug.Log("GameOver");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
 }
