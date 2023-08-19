@@ -50,10 +50,6 @@ public class PauseManager : MonoBehaviour
 
     public void restart()
     {
-        if (audioSource.isPlaying)
-        {
-            Debug.Log("playing");
-        }
         TogglePause();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         

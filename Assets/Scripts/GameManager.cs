@@ -578,7 +578,7 @@ public class GameManager : MonoBehaviour
 
     void gameOverHandler()
     {
-        Debug.Log("GameOver");
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    
+        SceneManager.LoadScene("GameOver");
     }
 }
