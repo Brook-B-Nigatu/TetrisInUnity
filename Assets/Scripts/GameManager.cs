@@ -88,7 +88,10 @@ public class GameManager : MonoBehaviour
     public static event OnGameOver GameOver;
 
     private delegate void OnBlockMove();
-    private event OnBlockMove BlockMove;    
+    private event OnBlockMove BlockMove;
+
+    private delegate void OnRowDestroy();
+    private event OnRowDestroy RowDestroyed;
 
     private bool gamePaused = false;
 
@@ -101,7 +104,8 @@ public class GameManager : MonoBehaviour
 
     private LineRenderer lineRenderer;
 
-    // Start is called before the first frame update
+    private ScoreHandler scoreHandler;
+
     void Awake()
     {   
         // Determine key constants for the rest of the game and Initialize data structures to keep track of game status
@@ -129,6 +133,9 @@ public class GameManager : MonoBehaviour
         
         lineRenderer = GetComponent<LineRenderer>();
         drawLines();
+
+        scoreHandler = GameObject.FindWithTag("Score").GetComponent<ScoreHandler>();
+
     }
 
     void drawLines()
@@ -162,6 +169,7 @@ public class GameManager : MonoBehaviour
         BlockMove += checkLand;
         GameOver += gameOverHandler;
         PauseManager.TogglePause += OnTogglePause;
+        RowDestroyed += incrementScore;
     }
 
     void OnDisable()
@@ -171,8 +179,8 @@ public class GameManager : MonoBehaviour
         BlockLanded -= blockLandHandler2;
         BlockLanded -= blockLandHandler1;
         BlockMove -= checkLand;
-
         PauseManager.TogglePause -= OnTogglePause;
+        RowDestroyed -= incrementScore;
     }
 
     // Update is called once per frame
@@ -487,7 +495,8 @@ public class GameManager : MonoBehaviour
                     Destroy(occupied[i, (int)activeBlock.coords.y].gameObject);
                     occupied[i, (int)activeBlock.coords.y] = null;
                 }
-                blocksInRow[(int)activeBlock.coords.y] = 0;     
+                blocksInRow[(int)activeBlock.coords.y] = 0;
+                RowDestroyed();
                 
                 if(activeBlock.coords.y < lowestDestroyed) 
                     lowestDestroyed = (int)activeBlock.coords.y;
@@ -580,5 +589,10 @@ public class GameManager : MonoBehaviour
     {
     
         SceneManager.LoadScene("GameOver");
+    }
+
+    void incrementScore()
+    {
+        scoreHandler.addScore(ROWCOUNT);
     }
 }
